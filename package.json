@@ -1,0 +1,156 @@
+{
+  "name": "maxout-vscode",
+  "displayName": "Maxout",
+  "description": "Local LLM proxy manager — start, stop, monitor your Maxout server from VS Code",
+  "version": "0.1.0",
+  "publisher": "miiidev",
+  "license": "MIT",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/miiidev/maxout-vscode"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "maxout.menu",
+        "title": "Maxout: Show Menu"
+      },
+      {
+        "command": "maxout.start",
+        "title": "Maxout: Start Server"
+      },
+      {
+        "command": "maxout.stop",
+        "title": "Maxout: Stop Server"
+      },
+      {
+        "command": "maxout.restart",
+        "title": "Maxout: Restart Server"
+      },
+      {
+        "command": "maxout.status",
+        "title": "Maxout: Show Status (Reliability)"
+      },
+      {
+        "command": "maxout.setup",
+        "title": "Maxout: Run Setup Wizard"
+      },
+      {
+        "command": "maxout.trace",
+        "title": "Maxout: Trace a Request"
+      },
+      {
+        "command": "maxout.revive",
+        "title": "Maxout: Revive a Model or Provider"
+      },
+      {
+        "command": "maxout.openConfig",
+        "title": "Maxout: Open Config File"
+      },
+      {
+        "command": "maxout.copyEndpoint",
+        "title": "Maxout: Copy Endpoint Config"
+      },
+      {
+        "command": "maxout.exportStats",
+        "title": "Maxout: Export Reliability Stats"
+      },
+      {
+        "command": "maxout.pointExtension",
+        "title": "Maxout: Point Extension at Maxout"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "maxout",
+          "title": "Maxout",
+          "icon": "media/maxout.svg"
+        }
+      ]
+    },
+    "views": {
+      "maxout": [
+        {
+          "type": "webview",
+          "id": "maxout.dashboard",
+          "name": "Dashboard"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Maxout",
+      "properties": {
+        "maxout.cliPath": {
+          "type": "string",
+          "default": "maxout",
+          "description": "Path to the Maxout CLI binary. Override if not on PATH (e.g. \"node dist/cli.js\")."
+        },
+        "maxout.host": {
+          "type": "string",
+          "default": "127.0.0.1",
+          "description": "Host address the Maxout server binds to."
+        },
+        "maxout.port": {
+          "type": "number",
+          "default": 8787,
+          "description": "Port the Maxout server listens on."
+        },
+        "maxout.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically start the Maxout server when VS Code starts."
+        },
+        "maxout.trace": {
+          "type": "boolean",
+          "default": true,
+          "description": "Launch the server with the --trace flag to enable per-request routing logs."
+        },
+        "maxout.defaultAlias": {
+          "type": "string",
+          "default": "auto/coding",
+          "scope": "resource",
+          "description": "Default model alias used when copying endpoint config. Workspace-scoped so different repos can use different aliases."
+        },
+        "maxout.dashboardRefreshMs": {
+          "type": "number",
+          "default": 5000,
+          "description": "Poll interval (ms) for the dashboard webview data refresh."
+        },
+        "maxout.warnOnCooldown": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a notification when a model in the default alias tier enters cooldown or exhaustion."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --minify",
+    "watch": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --watch",
+    "lint": "tsc --noEmit",
+    "compile:test": "tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "npm run compile && npm run compile:test && node out/test/runTests.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.10.0",
+    "@types/mocha": "^10.0.0",
+    "esbuild": "^0.19.0",
+    "vitest": "^1.2.0",
+    "@vscode/test-electron": "^2.3.0"
+  },
+  "dependencies": {}
+}
