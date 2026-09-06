@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 
-export type { IntegrationTarget, MaxoutEndpoint } from './types';
+export type { IntegrationTarget, FreemaxxingEndpoint, MaxoutEndpoint } from './types';
 export { registerIntegration, getIntegrations, getInstalledIntegrations, getIntegrationById } from './types';
 
-export { pointExtensionAtMaxout, getAvailableIntegrations, getInstalledIntegrationNames } from './commands';
+export { pointExtensionAtFreemaxxing, pointExtensionAtMaxout, getAvailableIntegrations, getInstalledIntegrationNames } from './commands';
 
 export async function detectAndShowIntegrationPicker() {
   const { getIntegrations } = await import('./types');
@@ -22,7 +22,7 @@ export async function detectAndShowIntegrationPicker() {
   }));
 
   const selected = await vscode.window.showQuickPick(items, {
-    placeHolder: 'Select an AI extension to point at Maxout',
+    placeHolder: 'Select an AI extension to point at FreeMaxxing',
   });
 
   return selected?.target;

@@ -10,7 +10,7 @@ import { TraceView } from './traceView';
 import { ConfigEditor } from './configEditor';
 import { TerminalRunner } from './terminalRunner';
 import { buildEndpointConfig, isCoolingDown, StatusRow } from './parsers';
-import { pointExtensionAtMaxout } from './integrations';
+import { pointExtensionAtFreemaxxing, pointExtensionAtMaxout } from './integrations';
 
 let processManager: ProcessManager | undefined;
 
@@ -18,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
   // -----------------------------------------------------------------------
   // Module wiring
   // -----------------------------------------------------------------------
-  const outputChannel = vscode.window.createOutputChannel('Maxout');
+  const outputChannel = vscode.window.createOutputChannel('FreeMaxxing');
   context.subscriptions.push(outputChannel);
 
   processManager = new ProcessManager();
@@ -33,8 +33,8 @@ export function activate(context: vscode.ExtensionContext) {
   const terminalRunner = new TerminalRunner();
   context.subscriptions.push(traceView, terminalRunner);
 
-  const getConfig = () => vscode.workspace.getConfiguration('maxout');
-  const cliPath = () => getConfig().get<string>('cliPath', 'maxout');
+  const getConfig = () => vscode.workspace.getConfiguration('freemaxxing');
+  const cliPath = () => getConfig().get<string>('cliPath', 'freemaxxing');
 
   // -----------------------------------------------------------------------
   // Output channel: server stdout/stderr
@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
   // -----------------------------------------------------------------------
   // Status bar: server state, served-by, cooldown models
   // -----------------------------------------------------------------------
-  statusBar.setCommand('maxout.menu');
+  statusBar.setCommand('freemaxxing.menu');
   statusBar.setState('unknown');
 
   healthCheck.onStateChange((up, servedBy) => {
@@ -71,13 +71,13 @@ export function activate(context: vscode.ExtensionContext) {
   // -----------------------------------------------------------------------
   pm.onExit((code) => {
     if (pm.wasUserInitiatedStop()) {
-      outputChannel.appendLine('[Maxout] Server stopped by user.');
+      outputChannel.appendLine('[FreeMaxxing] Server stopped by user.');
       return;
     }
     if (code !== null && code !== 0) {
       void vscode.window
         .showErrorMessage(
-          `Maxout stopped unexpectedly (exit code ${code}).`,
+          `FreeMaxxing stopped unexpectedly (exit code ${code}).`,
           'Show Output',
           'Restart'
         )
@@ -85,7 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
           if (selection === 'Show Output') {
             outputChannel.show();
           } else if (selection === 'Restart') {
-            void vscode.commands.executeCommand('maxout.start');
+            void vscode.commands.executeCommand('freemaxxing.start');
           }
         });
     }
@@ -96,21 +96,21 @@ export function activate(context: vscode.ExtensionContext) {
     if (err.code === 'ENOENT') {
       void vscode.window
         .showErrorMessage(
-          `Maxout CLI not found (${cliPath()}). Install it or set \`maxout.cliPath\` in settings.`,
+          `FreeMaxxing CLI not found (${cliPath()}). Install it or set \`freemaxxing.cliPath\` in settings.`,
           'Open Settings',
           'Install Instructions'
         )
         .then((selection) => {
           if (selection === 'Open Settings') {
-            void vscode.commands.executeCommand('workbench.action.openSettings', 'maxout.cliPath');
+            void vscode.commands.executeCommand('workbench.action.openSettings', 'freemaxxing.cliPath');
           } else if (selection === 'Install Instructions') {
             void vscode.env.openExternal(
-              vscode.Uri.parse('https://github.com/miiidev/maxout#installation')
+              vscode.Uri.parse('https://github.com/miiidev/freemaxxing#installation')
             );
           }
         });
     } else {
-      void vscode.window.showErrorMessage(`Failed to start Maxout: ${err.message}`);
+      void vscode.window.showErrorMessage(`Failed to start FreeMaxxing: ${err.message}`);
     }
   });
 
@@ -121,20 +121,20 @@ export function activate(context: vscode.ExtensionContext) {
   let dashboardTimer: ReturnType<typeof setInterval> | null = null;
 
   function refreshDashboardData(quiet = false): Promise<void> {
-    outputChannel.appendLine(`[Maxout] Dashboard refresh: starting (quiet=${quiet})`);
+    outputChannel.appendLine(`[FreeMaxxing] Dashboard refresh: starting (quiet=${quiet})`);
     return healthCheck
       .fetchStatusReliability(cliPath())
       .then((rows) => {
-        outputChannel.appendLine(`[Maxout] Dashboard refresh: got ${rows.length} rows`);
+        outputChannel.appendLine(`[FreeMaxxing] Dashboard refresh: got ${rows.length} rows`);
         dashboardProvider.updateData(rows);
         checkCooldownWarnings(rows);
         // First-run CTA: no rows AND no `.env` with keys yet (spec §8.3).
-        const envPath = path.join(os.homedir(), '.maxout', '.env');
+        const envPath = path.join(os.homedir(), '.freemaxxing', '.env');
         const noKeys = !fs.existsSync(envPath);
         dashboardProvider.setSetupCta(rows.length === 0 && noKeys);
       })
       .catch((err) => {
-        outputChannel.appendLine(`[Maxout] Dashboard refresh failed: ${err?.message ?? err}`);
+        outputChannel.appendLine(`[FreeMaxxing] Dashboard refresh failed: ${err?.message ?? err}`);
         if (!quiet) {
           // Already logged above
         }
@@ -170,7 +170,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   dashboardProvider.onRefresh(() => {
-    outputChannel.appendLine('[Maxout] Dashboard refresh button clicked');
+    outputChannel.appendLine('[FreeMaxxing] Dashboard refresh button clicked');
     void refreshDashboardData(false);
   });
 
@@ -199,7 +199,7 @@ export function activate(context: vscode.ExtensionContext) {
       )
       .then((selection) => {
         if (selection === 'Show Dashboard') {
-          void vscode.commands.executeCommand('workbench.view.extension.maxout');
+void vscode.commands.executeCommand('workbench.view.extension.freemaxxing');
         }
       });
   }
@@ -216,7 +216,7 @@ export function activate(context: vscode.ExtensionContext) {
     setupCelebrated = true;
     void vscode.window
       .showInformationMessage(
-        'Maxout is configured and running.',
+        'FreeMaxxing is configured and running.',
         'Copy Endpoint Config'
       )
       .then((sel) => {
@@ -234,12 +234,12 @@ export function activate(context: vscode.ExtensionContext) {
     const pmLocal = processManager!;
     if (pmLocal.isRunning()) {
       void vscode.window.showInformationMessage(
-        'Maxout server is already running (started by this window).'
+        'FreeMaxxing server is already running (started by this window).'
       );
       return;
     }
     const trace = getConfig().get<boolean>('trace', true);
-    outputChannel.appendLine(`[Maxout] Starting: ${cliPath()} serve${trace ? ' --trace' : ''}`);
+    outputChannel.appendLine(`[FreeMaxxing] Starting: ${cliPath()} serve${trace ? ' --trace' : ''}`);
     pmLocal.start(cliPath(), { trace });
     statusBar.setState('loading');
   }
@@ -252,10 +252,10 @@ export function activate(context: vscode.ExtensionContext) {
     }
     if (healthCheck.isUp()) {
       void vscode.window.showInformationMessage(
-        'Maxout server is running but was started outside this window. To stop it, kill the `maxout serve` process in your terminal or task manager.'
+        'FreeMaxxing server is running but was started outside this window. To stop it, kill the `freemaxxing serve` process in your terminal or task manager.'
       );
     } else {
-      void vscode.window.showInformationMessage('Maxout server is not running.');
+      void vscode.window.showInformationMessage('FreeMaxxing server is not running.');
     }
   }
 
@@ -266,7 +266,7 @@ export function activate(context: vscode.ExtensionContext) {
       setTimeout(() => startServer(), 600);
     } else if (healthCheck.isUp()) {
       void vscode.window.showInformationMessage(
-        'Maxout server is running, but this window did not start it, so it cannot be restarted from here.'
+        'FreeMaxxing server is running, but this window did not start it, so it cannot be restarted from here.'
       );
     } else {
       startServer();
@@ -280,7 +280,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (owned) {
       items.push(
-        { label: '$(debug-stop) Stop Server', description: 'Stop the Maxout server process' },
+        { label: '$(debug-stop) Stop Server', description: 'Stop the FreeMaxxing server process' },
         { label: '$(refresh) Restart Server', description: 'Stop and start the server again' },
       );
     } else if (up) {
@@ -289,7 +289,7 @@ export function activate(context: vscode.ExtensionContext) {
         description: 'Started outside this window — cannot be stopped from here',
       });
     } else {
-      items.push({ label: '$(play) Start Server', description: 'Launch `maxout serve [--trace]`' });
+      items.push({ label: '$(play) Start Server', description: 'Launch `freemaxxing serve [--trace]`' });
     }
 
     items.push(
@@ -297,30 +297,36 @@ export function activate(context: vscode.ExtensionContext) {
       { label: '$(search) Trace a Request', description: 'Look up routing details for a request ID' },
       { label: '$(tools) Run Setup Wizard', description: 'Interactive provider key setup' },
       { label: '$(clippy) Copy Endpoint Config', description: 'Copy `{apiBase, apiKey, model}` JSON' },
-      { label: '$(gear) Open Config File', description: 'Open ~/.maxout/config.json' },
-      { label: '$(export) Export Reliability Stats', description: 'Export to maxout-stats.json' },
-      { label: '$(plug) Point Extension at Maxout', description: 'Configure Continue/Cline/Roo Code to use Maxout' },
+      { label: '$(gear) Open Config File', description: 'Open ~/.freemaxxing/config.json' },
+      { label: '$(export) Export Reliability Stats', description: 'Export to freemaxxing-stats.json' },
+      { label: '$(plug) Point Extension at FreeMaxxing', description: 'Configure Continue/Cline/Roo Code to use FreeMaxxing' },
+      { label: '$(list-unordered) Show Providers', description: 'List provider status (enabled/disabled, key present)' },
+      { label: '$(circle-slash) Disable Provider', description: 'Disable a provider in config.json' },
+      { label: '$(add) Enable Provider', description: 'Enable a provider in config.json' },
     );
 
-    void vscode.window.showQuickPick(items, { placeHolder: 'Maxout' }).then((sel) => {
+    void vscode.window.showQuickPick(items, { placeHolder: 'FreeMaxxing' }).then((sel) => {
       if (!sel) { return; }
       const label = sel.label;
       if (label.includes('Start Server')) { startServer(); }
       else if (label.includes('Restart Server')) { restartServer(); }
       else if (label.includes('Stop Server')) { stopServer(); }
-      else if (label.includes('Show Dashboard')) { void vscode.commands.executeCommand('workbench.view.extension.maxout'); }
+      else if (label.includes('Show Dashboard')) { void vscode.commands.executeCommand('workbench.view.extension.freemaxxing'); }
       else if (label.includes('Trace a Request')) { traceView.show(cliPath); }
       else if (label.includes('Setup Wizard')) { runSetup(); }
       else if (label.includes('Copy Endpoint')) { copyEndpoint(); }
       else if (label.includes('Config File')) { void configEditor.open(); }
       else if (label.includes('Export')) { exportStats(); }
-      else if (label.includes('Point Extension')) { void pointExtensionAtMaxout(getConfig, cliPath); }
+      else if (label.includes('Point Extension')) { void pointExtensionAtFreemaxxing(getConfig, cliPath); }
+      else if (label.includes('Show Providers')) { showProviders(); }
+      else if (label.includes('Disable Provider')) { disableProvider(); }
+      else if (label.includes('Enable Provider')) { enableProvider(); }
     });
   }
 
   function runSetup() {
     const isWin = process.platform === 'win32';
-    terminalRunner.run('maxout.setup', 'setup', {
+    terminalRunner.run('freemaxxing.setup', 'setup', {
       cliPath: cliPath(),
       hint: isWin
         ? 'Tip: in PowerShell, set keys with `$env:NAME = "value"` (not `set NAME=value`).'
@@ -333,7 +339,7 @@ export function activate(context: vscode.ExtensionContext) {
   }
 
   function exportStats() {
-    terminalRunner.run('maxout.exportStats', 'export-stats --out maxout-stats.json', {
+    terminalRunner.run('freemaxxing.exportStats', 'export-stats --out freemaxxing-stats.json', {
       cliPath: cliPath(),
     });
   }
@@ -345,30 +351,57 @@ export function activate(context: vscode.ExtensionContext) {
     const snippet = buildEndpointConfig(host, port, alias);
     void vscode.env.clipboard.writeText(snippet);
     void vscode.window.showInformationMessage(
-      'Endpoint config copied to clipboard. Note: Maxout does not check client keys — `apiKey: "anything"` is a placeholder, not a real secret.'
+      'Endpoint config copied to clipboard. Note: FreeMaxxing does not check client keys — `apiKey: "anything"` is a placeholder, not a real secret.'
     );
+  }
+
+  function showProviders() {
+    terminalRunner.run('freemaxxing.providers', 'providers', { cliPath: cliPath() });
+  }
+
+  async function disableProvider() {
+    const provider = await vscode.window.showInputBox({
+      title: 'Disable Provider',
+      prompt: 'Enter provider name (openrouter, groq, google, mistral, cerebras, local)',
+      placeHolder: 'groq',
+    });
+    if (!provider) { return; }
+    terminalRunner.run('freemaxxing.disable', `disable ${provider}`, { cliPath: cliPath() });
+  }
+
+  async function enableProvider() {
+    const provider = await vscode.window.showInputBox({
+      title: 'Enable Provider',
+      prompt: 'Enter provider name (openrouter, groq, google, mistral, cerebras, local)',
+      placeHolder: 'groq',
+    });
+    if (!provider) { return; }
+    terminalRunner.run('freemaxxing.enable', `enable ${provider}`, { cliPath: cliPath() });
   }
 
   // -----------------------------------------------------------------------
   // Registration
   // -----------------------------------------------------------------------
   context.subscriptions.push(
-    vscode.commands.registerCommand('maxout.menu', showMenu),
-    vscode.commands.registerCommand('maxout.start', startServer),
-    vscode.commands.registerCommand('maxout.stop', stopServer),
-    vscode.commands.registerCommand('maxout.restart', restartServer),
+    vscode.commands.registerCommand('freemaxxing.menu', showMenu),
+    vscode.commands.registerCommand('freemaxxing.start', startServer),
+    vscode.commands.registerCommand('freemaxxing.stop', stopServer),
+    vscode.commands.registerCommand('freemaxxing.restart', restartServer),
     // Phase 1: "Show Status" opens the dashboard instead of a terminal dump.
-    vscode.commands.registerCommand('maxout.status', () =>
-      void vscode.commands.executeCommand('workbench.view.extension.maxout')
+    vscode.commands.registerCommand('freemaxxing.status', () =>
+      void vscode.commands.executeCommand('workbench.view.extension.freemaxxing')
     ),
-    vscode.commands.registerCommand('maxout.setup', runSetup),
-    vscode.commands.registerCommand('maxout.trace', () => traceView.show(cliPath)),
-    vscode.commands.registerCommand('maxout.revive', () => traceView.showRevive(cliPath)),
-    vscode.commands.registerCommand('maxout.openConfig', () => void configEditor.open()),
-    vscode.commands.registerCommand('maxout.copyEndpoint', copyEndpoint),
-    vscode.commands.registerCommand('maxout.exportStats', exportStats),
-    vscode.commands.registerCommand('maxout.pointExtension', () => pointExtensionAtMaxout(getConfig, cliPath)),
-    vscode.window.registerWebviewViewProvider('maxout.dashboard', dashboardProvider),
+    vscode.commands.registerCommand('freemaxxing.setup', runSetup),
+    vscode.commands.registerCommand('freemaxxing.trace', () => traceView.show(cliPath)),
+    vscode.commands.registerCommand('freemaxxing.revive', () => traceView.showRevive(cliPath)),
+    vscode.commands.registerCommand('freemaxxing.openConfig', () => void configEditor.open()),
+    vscode.commands.registerCommand('freemaxxing.copyEndpoint', copyEndpoint),
+    vscode.commands.registerCommand('freemaxxing.exportStats', exportStats),
+    vscode.commands.registerCommand('freemaxxing.pointExtension', () => pointExtensionAtFreemaxxing(getConfig, cliPath)),
+    vscode.commands.registerCommand('freemaxxing.showProviders', showProviders),
+    vscode.commands.registerCommand('freemaxxing.disableProvider', disableProvider),
+    vscode.commands.registerCommand('freemaxxing.enableProvider', enableProvider),
+    vscode.window.registerWebviewViewProvider('freemaxxing.dashboard', dashboardProvider),
   );
 
   // -----------------------------------------------------------------------
@@ -376,7 +409,7 @@ export function activate(context: vscode.ExtensionContext) {
   // -----------------------------------------------------------------------
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (!e.affectsConfiguration('maxout')) { return; }
+      if (!e.affectsConfiguration('freemaxxing')) { return; }
       healthCheck.updateConfig();
       stopDashboardPolling();
       if (dashboardProvider.isVisible()) {

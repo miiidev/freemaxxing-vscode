@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 
 /**
- * Manages the Maxout status bar item.
+ * Manages the FreeMaxxing status bar item.
  *
  * Renders current server state (unknown / down / up / cooldown) and shows
  * last served-by model in the tooltip. The item itself is a clickable command
- * button that opens the maxout menu.
+ * button that opens the FreeMaxxing menu.
  */
 export class StatusBar {
   private item: vscode.StatusBarItem;
@@ -19,7 +19,7 @@ export class StatusBar {
       vscode.StatusBarAlignment.Left,
       100
     );
-    this.item.name = 'Maxout';
+    this.item.name = 'FreeMaxxing';
     this.item.show();
   }
 
@@ -85,29 +85,29 @@ export class StatusBar {
 
     switch (this._state) {
       case 'unknown':
-        this.item.text = '$(sync~spin) Maxout';
+        this.item.text = '$(sync~spin) FreeMaxxing';
         this.item.tooltip = 'Checking...';
         break;
 
       case 'loading':
-        this.item.text = '$(sync~spin) Maxout: starting';
+        this.item.text = '$(sync~spin) FreeMaxxing: starting';
         this.item.tooltip = 'Starting server...';
         break;
 
       case 'down':
-        this.item.text = '$(circle-slash) Maxout: stopped';
+        this.item.text = '$(circle-slash) FreeMaxxing: stopped';
         this.item.tooltip = 'Not running. Click to start.';
         break;
 
       case 'up':
         if (hasCooldown) {
-          this.item.text = `$(warning) Maxout: ${this._cooldownModels.length} model(s) cooling down`;
+          this.item.text = `$(warning) FreeMaxxing: ${this._cooldownModels.length} model(s) cooling down`;
           this.item.tooltip = `Models in cooldown:\n${this._cooldownModels.join('\n')}\n\nClick for options.`;
         } else if (this._lastServedBy) {
-          this.item.text = `$(zap) Maxout: ${this._lastServedBy}`;
+          this.item.text = `$(zap) FreeMaxxing: ${this._lastServedBy}`;
           this.item.tooltip = `Last served by ${this._lastServedBy}. Click for options.`;
         } else {
-          this.item.text = '$(zap) Maxout: running';
+          this.item.text = '$(zap) FreeMaxxing: running';
           this.item.tooltip = 'Running. Click for options.';
         }
         break;

@@ -1,14 +1,14 @@
 {
-  "name": "maxout-vscode",
-  "displayName": "Maxout",
-  "description": "Local LLM proxy manager — start, stop, monitor your Maxout server from VS Code",
+  "name": "freemaxxing-vscode",
+  "displayName": "FreeMaxxing",
+  "description": "Local LLM proxy manager — start, stop, monitor your FreeMaxxing server from VS Code",
   "version": "0.1.0",
   "publisher": "miiidev",
   "license": "MIT",
   "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/miiidev/maxout-vscode"
+    "url": "https://github.com/miiidev/freemaxxing-vscode"
   },
   "engines": {
     "vscode": "^1.85.0"
@@ -20,115 +20,142 @@
   "contributes": {
     "commands": [
       {
-        "command": "maxout.menu",
-        "title": "Maxout: Show Menu"
+        "command": "freemaxxing.menu",
+        "title": "FreeMaxxing: Show Menu"
       },
       {
-        "command": "maxout.start",
-        "title": "Maxout: Start Server"
+        "command": "freemaxxing.start",
+        "title": "FreeMaxxing: Start Server"
       },
       {
-        "command": "maxout.stop",
-        "title": "Maxout: Stop Server"
+        "command": "freemaxxing.stop",
+        "title": "FreeMaxxing: Stop Server"
       },
       {
-        "command": "maxout.restart",
-        "title": "Maxout: Restart Server"
+        "command": "freemaxxing.restart",
+        "title": "FreeMaxxing: Restart Server"
       },
       {
-        "command": "maxout.status",
-        "title": "Maxout: Show Status (Reliability)"
+        "command": "freemaxxing.status",
+        "title": "FreeMaxxing: Show Status (Reliability)"
       },
       {
-        "command": "maxout.setup",
-        "title": "Maxout: Run Setup Wizard"
+        "command": "freemaxxing.setup",
+        "title": "FreeMaxxing: Run Setup Wizard"
       },
       {
-        "command": "maxout.trace",
-        "title": "Maxout: Trace a Request"
+        "command": "freemaxxing.trace",
+        "title": "FreeMaxxing: Trace a Request"
       },
       {
-        "command": "maxout.revive",
-        "title": "Maxout: Revive a Model or Provider"
+        "command": "freemaxxing.revive",
+        "title": "FreeMaxxing: Revive a Model or Provider"
       },
       {
-        "command": "maxout.openConfig",
-        "title": "Maxout: Open Config File"
+        "command": "freemaxxing.openConfig",
+        "title": "FreeMaxxing: Open Config File"
       },
       {
-        "command": "maxout.copyEndpoint",
-        "title": "Maxout: Copy Endpoint Config"
+        "command": "freemaxxing.copyEndpoint",
+        "title": "FreeMaxxing: Copy Endpoint Config"
       },
       {
-        "command": "maxout.exportStats",
-        "title": "Maxout: Export Reliability Stats"
+        "command": "freemaxxing.exportStats",
+        "title": "FreeMaxxing: Export Reliability Stats"
       },
       {
-        "command": "maxout.pointExtension",
-        "title": "Maxout: Point Extension at Maxout"
+        "command": "freemaxxing.pointExtension",
+        "title": "FreeMaxxing: Point Extension at FreeMaxxing"
+      },
+      {
+        "command": "freemaxxing.showProviders",
+        "title": "FreeMaxxing: Show Providers"
+      },
+      {
+        "command": "freemaxxing.disableProvider",
+        "title": "FreeMaxxing: Disable Provider"
+      },
+      {
+        "command": "freemaxxing.enableProvider",
+        "title": "FreeMaxxing: Enable Provider"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "maxout",
-          "title": "Maxout",
-          "icon": "media/maxout.svg"
+          "id": "freemaxxing",
+          "title": "FreeMaxxing",
+          "icon": "media/freemaxxing.svg"
         }
       ]
     },
     "views": {
-      "maxout": [
+      "freemaxxing": [
         {
           "type": "webview",
-          "id": "maxout.dashboard",
+          "id": "freemaxxing.dashboard",
           "name": "Dashboard"
         }
       ]
     },
     "configuration": {
-      "title": "Maxout",
+      "title": "FreeMaxxing",
       "properties": {
-        "maxout.cliPath": {
+        "freemaxxing.cliPath": {
           "type": "string",
-          "default": "maxout",
-          "description": "Path to the Maxout CLI binary. Override if not on PATH (e.g. \"node dist/cli.js\")."
+          "default": "freemaxxing",
+          "description": "Path to the FreeMaxxing CLI binary. Override if not on PATH (e.g. \"node dist/cli.js\")."
         },
-        "maxout.host": {
+        "freemaxxing.host": {
           "type": "string",
           "default": "127.0.0.1",
-          "description": "Host address the Maxout server binds to."
+          "description": "Host address the FreeMaxxing server binds to."
         },
-        "maxout.port": {
+        "freemaxxing.port": {
           "type": "number",
           "default": 8787,
-          "description": "Port the Maxout server listens on."
+          "description": "Port the FreeMaxxing server listens on."
         },
-        "maxout.autoStart": {
+        "freemaxxing.autoStart": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically start the Maxout server when VS Code starts."
+          "description": "Automatically start the FreeMaxxing server when VS Code starts."
         },
-        "maxout.trace": {
+        "freemaxxing.trace": {
           "type": "boolean",
           "default": true,
           "description": "Launch the server with the --trace flag to enable per-request routing logs."
         },
-        "maxout.defaultAlias": {
+        "freemaxxing.defaultAlias": {
           "type": "string",
           "default": "auto/coding",
           "scope": "resource",
           "description": "Default model alias used when copying endpoint config. Workspace-scoped so different repos can use different aliases."
         },
-        "maxout.dashboardRefreshMs": {
+        "freemaxxing.dashboardRefreshMs": {
           "type": "number",
           "default": 5000,
           "description": "Poll interval (ms) for the dashboard webview data refresh."
         },
-        "maxout.warnOnCooldown": {
+        "freemaxxing.warnOnCooldown": {
           "type": "boolean",
           "default": true,
           "description": "Show a notification when a model in the default alias tier enters cooldown or exhaustion."
+        },
+        "freemaxxing.localBaseURL": {
+          "type": "string",
+          "default": "",
+          "description": "Override base URL for the local provider (default: http://localhost:11434/v1)."
+        },
+        "freemaxxing.ttfbTimeoutMs": {
+          "type": "number",
+          "default": 30000,
+          "description": "Time-to-first-byte timeout in milliseconds for upstream model requests."
+        },
+        "freemaxxing.retryBackoffMs": {
+          "type": "number",
+          "default": 1000,
+          "description": "Backoff delay in milliseconds between retry attempts on rate-limited models."
         }
       }
     }
@@ -144,13 +171,12 @@
     "test:integration": "npm run compile && npm run compile:test && node out/test/runTests.js"
   },
   "devDependencies": {
-    "typescript": "^5.3.0",
-    "@types/vscode": "^1.85.0",
-    "@types/node": "^20.10.0",
     "@types/mocha": "^10.0.0",
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.0",
     "esbuild": "^0.19.0",
-    "vitest": "^1.2.0",
-    "@vscode/test-electron": "^2.3.0"
-  },
-  "dependencies": {}
+    "typescript": "^5.9.3",
+    "vitest": "^1.2.0"
+  }
 }

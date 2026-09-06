@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { StatusRow, stateSlug, isCoolingDown } from './parsers';
 
 export class DashboardProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'maxout.dashboard';
+  public static readonly viewType = 'freemaxxing.dashboard';
   private _view?: vscode.WebviewView;
   private _rows: StatusRow[] = [];
   private _serverUp = false;
@@ -45,24 +45,24 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
           this._emitter.emit('refresh');
           break;
         case 'trace':
-          void vscode.commands.executeCommand('maxout.trace');
+          void vscode.commands.executeCommand('freemaxxing.trace');
           break;
         case 'setup':
-          void vscode.commands.executeCommand('maxout.setup');
+          void vscode.commands.executeCommand('freemaxxing.setup');
           break;
         case 'revive':
           if (message.model) {
-            void vscode.commands.executeCommand('maxout.revive', message.model);
+            void vscode.commands.executeCommand('freemaxxing.revive', message.model);
           }
           break;
         case 'copyEndpoint':
-          void vscode.commands.executeCommand('maxout.copyEndpoint');
+          void vscode.commands.executeCommand('freemaxxing.copyEndpoint');
           break;
         case 'openConfig':
-          void vscode.commands.executeCommand('maxout.openConfig');
+          void vscode.commands.executeCommand('freemaxxing.openConfig');
           break;
         case 'pointExtension':
-          void vscode.commands.executeCommand('maxout.pointExtension');
+          void vscode.commands.executeCommand('freemaxxing.pointExtension');
           break;
       }
     });
@@ -109,9 +109,12 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
   private _pushData(): void {
     if (!this._view) { return; }
 
-    const host = vscode.workspace.getConfiguration('maxout').get<string>('host', '127.0.0.1');
-    const port = vscode.workspace.getConfiguration('maxout').get<number>('port', 8787);
-    const defaultAlias = vscode.workspace.getConfiguration('maxout').get<string>('defaultAlias', 'auto/coding');
+    const host = vscode.workspace.getConfiguration('freemaxxing').get<string>('host', '127.0.0.1');
+    const port = vscode.workspace.getConfiguration('freemaxxing').get<number>('port', 8787);
+    const defaultAlias = vscode.workspace.getConfiguration('freemaxxing').get<string>('defaultAlias', 'auto/coding');
+    const harvestEnabled = vscode.workspace.getConfiguration('freemaxxing').get<boolean>('harvest', true);
+    const customAliases = Object.keys(vscode.workspace.getConfiguration('freemaxxing').get('aliases', {}))
+      .filter(k => !['auto/coding', 'auto/fast', 'auto/any'].includes(k));
 
     // Convert rows to a plain-data format for the webview.
     const rowData = this._rows.map((m) => ({
@@ -121,6 +124,7 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
       requests: m.requests,
       tokens: m.tokens,
       reliability: m.reliability,
+      score: m.score,
     }));
 
     this._view.webview.postMessage({
@@ -130,6 +134,8 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
       defaultAlias,
       serverUp: this._serverUp,
       setupCta: this._setupCta,
+      harvestEnabled,
+      customAliases,
       rows: rowData,
     });
   }
@@ -350,6 +356,8 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
       </div>
       <div class="header-actions">
         <span class="badge warn" id="cooldownBadge" style="display:none"></span>
+        <span class="badge" id="harvestBadge" style="display:none">Harvest: enabled</span>
+        <span class="badge" id="aliasBadge" style="display:none">Custom: +N</span>
         <button class="btn" id="btnPoint" title="Configure AI extensions">&#128268;</button>
         <button class="btn" id="btnRefresh">&#8635;</button>
       </div>
@@ -379,6 +387,7 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
           <th data-sort="requests" style="text-align:right">Req</th>
           <th data-sort="tokens" style="text-align:right">Tok</th>
           <th data-sort="reliability" style="text-align:right">Rel</th>
+          <th data-sort="score" style="text-align:right">Score</th>
         </tr>
       </thead>
       <tbody id="modelTableBody"></tbody>
@@ -471,6 +480,23 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
           cooldownBadge.style.display = 'none';
         }
 
+        // Harvest badge
+        if (msg.harvestEnabled) {
+          harvestBadge.style.display = '';
+          harvestBadge.textContent = 'Harvest: enabled';
+        } else {
+          harvestBadge.style.display = 'none';
+          harvestBadge.textContent = 'Harvest: disabled';
+        }
+
+        // Custom aliases badge
+        if (msg.customAliases && msg.customAliases.length > 0) {
+          aliasBadge.style.display = '';
+          aliasBadge.textContent = 'Custom: +' + msg.customAliases.length;
+        } else {
+          aliasBadge.style.display = 'none';
+        }
+
         // Summary bar
         if (msg.rows.length > 0) {
           summaryBar.style.display = '';
@@ -513,7 +539,7 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
         if (rowsData.length === 0) {
           const msg = setupCta
             ? '<div class="cta"><p>No provider keys configured yet.</p><button onclick="runSetup()">Run Setup Wizard</button></div>'
-            : 'No data yet. Make a request through Maxout and refresh.';
+            : 'No data yet. Make a request through FreeMaxxing and refresh.';
           tbody.innerHTML = '<tr><td colspan="5" class="empty">' + msg + '</td></tr>';
           return;
         }
@@ -538,6 +564,7 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
             + '<td class="num-cell">' + esc(r.requests) + '</td>'
             + '<td class="num-cell">' + esc(r.tokens) + '</td>'
             + '<td class="num-cell">' + esc(r.reliability) + '</td>'
+            + '<td class="num-cell">' + esc(r.score) + '</td>'
             + '</tr>';
 
           // Detail row if expanded
@@ -600,12 +627,13 @@ export class DashboardProvider implements vscode.WebviewViewProvider {
 
       function buildDetailInner(r) {
         const isCooling = r.slug === 'cooldown' || r.slug === 'exhausted';
-        let html = '<td colspan="5"><div class="detail-content"><div class="detail-grid">';
+        let html = '<td colspan="6"><div class="detail-content"><div class="detail-grid">';
         html += detailItem('Model', r.model);
         html += detailItem('State', r.state);
         html += detailItem('Requests', r.requests);
         html += detailItem('Tokens', r.tokens);
         html += detailItem('Reliability', r.reliability);
+        html += detailItem('Score', r.score);
         html += '</div><div class="detail-actions">';
         if (isCooling) {
           html += '<button class="detail-action revive" data-revive="' + esc(r.model) + '">Revive</button>';

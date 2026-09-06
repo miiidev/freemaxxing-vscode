@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IntegrationTarget, MaxoutEndpoint, registerIntegration } from './types';
+import { IntegrationTarget, FreemaxxingEndpoint, registerIntegration } from './types';
 
 interface RooCodeSettings {
   apiProvider?: string;
@@ -59,7 +59,7 @@ const rooCodeTarget: IntegrationTarget = {
     }
   },
 
-  mergeMaxoutConfig(config: unknown, endpoint: MaxoutEndpoint): unknown {
+  mergeFreemaxxingConfig(config: unknown, endpoint: FreemaxxingEndpoint): unknown {
     const cfg = (config as RooCodeSettings) || {};
 
     // Roo Code uses OpenAI-compatible API settings
@@ -73,13 +73,16 @@ const rooCodeTarget: IntegrationTarget = {
 
     return cfg;
   },
+  mergeMaxoutConfig(config: unknown, endpoint: FreemaxxingEndpoint): unknown {
+    return this.mergeFreemaxxingConfig!(config, endpoint);
+  },
 
   async openConfigDiff(original: unknown, merged: unknown): Promise<void> {
     const origStr = JSON.stringify(original, null, 2);
     const mergedStr = JSON.stringify(merged, null, 2);
 
     if (origStr === mergedStr) {
-      void vscode.window.showInformationMessage('Roo Code already has Maxout configured in settings.');
+      void vscode.window.showInformationMessage('Roo Code already has FreeMaxxing configured in settings.');
       return;
     }
 
@@ -89,7 +92,7 @@ const rooCodeTarget: IntegrationTarget = {
     });
     await vscode.window.showTextDocument(doc, { preview: false });
     void vscode.window.showInformationMessage(
-      'Roo Code settings updated with Maxout. Review and save the workspace settings.json.'
+      'Roo Code settings updated with FreeMaxxing. Review and save the workspace settings.json.'
     );
   },
 };

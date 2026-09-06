@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 /**
- * Run one-shot Maxout CLI commands in the VS Code integrated terminal.
+ * Run one-shot FreeMaxxing CLI commands in the VS Code integrated terminal.
  *
  * `serve` is piped as a child process (see ProcessManager) so its stdout can
  * be parsed; every other CLI command (`setup`, `export-stats`, …) is
@@ -12,9 +12,9 @@ export class TerminalRunner {
   private terminals = new Map<string, vscode.Terminal>();
 
   /**
-   * Execute a maxout CLI command in a named, reused terminal.
+   * Execute a FreeMaxxing CLI command in a named, reused terminal.
    *
-   * @param commandId - unique id for the terminal (e.g. "maxout.setup")
+   * @param commandId - unique id for the terminal (e.g. "freemaxxing.setup")
    * @param command - CLI arguments after the binary (e.g. "setup")
    * @param options  - cliPath override; optional hint appended as a comment
    *                   line (used for the Windows PowerShell `$env:` gotcha)
@@ -34,7 +34,7 @@ export class TerminalRunner {
     let terminal = this.terminals.get(commandId);
     if (!terminal || terminal.exitStatus !== undefined) {
       terminal = vscode.window.createTerminal({
-        name: `Maxout: ${commandId.replace('maxout.', '')}`,
+        name: `FreeMaxxing: ${commandId.replace('freemaxxing.', '')}`,
         iconPath: new vscode.ThemeIcon('zap'),
       });
       this.terminals.set(commandId, terminal);

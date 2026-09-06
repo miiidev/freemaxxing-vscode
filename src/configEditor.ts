@@ -4,17 +4,17 @@ import * as path from 'path';
 import * as os from 'os';
 
 /**
- * Opens or scaffolds `~/.maxout/config.json`.
- *
- * If the file doesn't exist, creates a scaffold with default content and
- * opens it as an untitled document (with a save hint).
- */
+  * Opens or scaffolds `~/.freemaxxing/config.json`.
+  *
+  * If the file doesn't exist, creates a scaffold with default content and
+  * opens it as an untitled document (with a save hint).
+  */
 export class ConfigEditor {
   private readonly configDir: string;
   private readonly configPath: string;
 
   constructor() {
-    this.configDir = path.join(os.homedir(), '.maxout');
+    this.configDir = path.join(os.homedir(), '.freemaxxing');
     this.configPath = path.join(this.configDir, 'config.json');
   }
 
@@ -36,7 +36,7 @@ export class ConfigEditor {
     if (!exists) {
       // Show a save hint
       vscode.window.showInformationMessage(
-        'A scaffold config file has been created at ~/.maxout/config.json. Edit and save it as needed.'
+        'A scaffold config file has been created at ~/.freemaxxing/config.json. Edit and save it as needed.'
       );
     }
   }
@@ -52,31 +52,28 @@ export class ConfigEditor {
     const scaffold = {
       host: '127.0.0.1',
       port: 8787,
-      aliases: {
-        'auto/coding': {
-          providers: ['openrouter', 'groq', 'google', 'mistral', 'cerebras'],
-          tier: 'premium',
-        },
-        'auto/fast': {
-          providers: ['groq', 'cerebras'],
-          tier: 'fast',
-        },
-        'auto/any': {
-          providers: ['openrouter', 'groq', 'google', 'mistral', 'cerebras'],
-          tier: 'any',
-        },
-      },
-      harvest: {
-        enabled: true,
-        intervalMs: 60000,
-      },
+      annotateResponses: true,
+      harvest: true,
       modelLimits: {},
       providerLimits: {},
-      annotateResponses: true,
-      hybrid: {
-        enabled: false,
-        dailyCapUSD: 0.50,
+      reliability: {
+        windowSize: 50,
+        minSamples: 5,
+        demoteBelow: 0.3,
       },
+      aliases: {
+        'auto/coding': {
+          tags: ['coding'],
+          requireTools: true,
+        },
+        'auto/fast': {
+          preferSpeed: true,
+        },
+        'auto/any': {},
+      },
+      // Local LLM (Ollama/llama.cpp) - uncomment to enable:
+      // localModels: ["llama3.2:latest"],
+      // localBaseURL: "http://localhost:11434/v1",
     };
 
     fs.writeFileSync(this.configPath, JSON.stringify(scaffold, null, 2), 'utf-8');

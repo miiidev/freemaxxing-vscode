@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { IntegrationTarget, MaxoutEndpoint, registerIntegration } from './types';
+import { IntegrationTarget, FreemaxxingEndpoint, registerIntegration } from './types';
 
 interface ContinueConfig {
   models?: ContinueModel[];
@@ -123,35 +123,35 @@ const continueTarget: IntegrationTarget = {
     writeJsonFile(configPath, config as ContinueConfig);
   },
 
-  mergeMaxoutConfig(config: unknown, endpoint: MaxoutEndpoint): unknown {
+  mergeFreemaxxingConfig(config: unknown, endpoint: FreemaxxingEndpoint): unknown {
     const cfg = ensureConfigStructure(config as ContinueConfig);
 
-    // Check if Maxout provider already exists
-    const maxoutProviderIndex = cfg.providers!.findIndex(
-      (p) => p.name === 'maxout' || (p.apiBase && p.apiBase.includes('8787'))
+    // Check if FreeMaxxing provider already exists
+    const freemaxxingProviderIndex = cfg.providers!.findIndex(
+      (p) => p.name === 'freemaxxing' || (p.apiBase && p.apiBase.includes('8787'))
     );
 
     const newProvider: ContinueProvider = {
-      name: 'maxout',
+      name: 'freemaxxing',
       apiBase: endpoint.apiBase,
       apiKey: endpoint.apiKey,
       models: [endpoint.model],
     };
 
-    if (maxoutProviderIndex >= 0) {
-      cfg.providers![maxoutProviderIndex] = newProvider;
+    if (freemaxxingProviderIndex >= 0) {
+      cfg.providers![freemaxxingProviderIndex] = newProvider;
     } else {
       cfg.providers!.push(newProvider);
     }
 
     // Also add as a custom model for easy selection
     const modelExists = cfg.customModels!.some(
-      (m) => m.title === 'Maxout' && m.apiBase === endpoint.apiBase
+      (m) => m.title === 'FreeMaxxing' && m.apiBase === endpoint.apiBase
     );
     if (!modelExists) {
       cfg.customModels!.push({
-        title: 'Maxout',
-        provider: 'maxout',
+        title: 'FreeMaxxing',
+        provider: 'freemaxxing',
         model: endpoint.model,
         apiBase: endpoint.apiBase,
         apiKey: endpoint.apiKey,
@@ -160,13 +160,16 @@ const continueTarget: IntegrationTarget = {
 
     return cfg;
   },
+  mergeMaxoutConfig(config: unknown, endpoint: FreemaxxingEndpoint): unknown {
+    return this.mergeFreemaxxingConfig!(config, endpoint);
+  },
 
   async openConfigDiff(original: unknown, merged: unknown): Promise<void> {
     const originalStr = JSON.stringify(original, null, 2);
     const mergedStr = JSON.stringify(merged, null, 2);
 
     if (originalStr === mergedStr) {
-      void vscode.window.showInformationMessage('Continue config already has Maxout configured.');
+      void vscode.window.showInformationMessage('Continue config already has FreeMaxxing configured.');
       return;
     }
 
@@ -176,7 +179,7 @@ const continueTarget: IntegrationTarget = {
     });
     await vscode.window.showTextDocument(doc, { preview: false });
     void vscode.window.showInformationMessage(
-      'Continue config updated with Maxout. Review and save the file.'
+      'Continue config updated with FreeMaxxing. Review and save the file.'
     );
   },
 };

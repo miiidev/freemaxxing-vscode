@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { getIntegrations, getInstalledIntegrations, IntegrationTarget, MaxoutEndpoint, detectAndShowIntegrationPicker } from './index';
+import { getIntegrations, getInstalledIntegrations, IntegrationTarget, FreemaxxingEndpoint, detectAndShowIntegrationPicker } from './index';
 import { buildEndpointConfig } from '../parsers';
 
-export async function pointExtensionAtMaxout(
+export async function pointExtensionAtFreemaxxing(
   getConfig: () => vscode.WorkspaceConfiguration,
   cliPath: () => string
 ): Promise<void> {
@@ -10,9 +10,9 @@ export async function pointExtensionAtMaxout(
   const port = getConfig().get<number>('port', 8787);
   const alias = getConfig().get<string>('defaultAlias', 'auto/coding');
 
-  const endpoint: MaxoutEndpoint = {
+  const endpoint: FreemaxxingEndpoint = {
     apiBase: `http://${host}:${port}/v1`,
-    apiKey: 'anything', // Maxout doesn't validate client keys
+    apiKey: 'anything', // FreeMaxxing doesn't validate client keys
     model: alias,
   };
 
@@ -35,17 +35,17 @@ export async function pointExtensionAtMaxout(
   }
 }
 
-async function applyToTarget(target: IntegrationTarget, endpoint: MaxoutEndpoint): Promise<void> {
+async function applyToTarget(target: IntegrationTarget, endpoint: FreemaxxingEndpoint): Promise<void> {
   try {
     const original = await target.readConfig();
-    const merged = target.mergeMaxoutConfig(original, endpoint);
+    const merged = (target.mergeFreemaxxingConfig ?? target.mergeMaxoutConfig)(original, endpoint);
 
     const origStr = JSON.stringify(original);
     const mergedStr = JSON.stringify(merged);
 
     if (origStr === mergedStr) {
       void vscode.window.showInformationMessage(
-        `${target.name} already has Maxout configured.`
+        `${target.name} already has FreeMaxxing configured.`
       );
       return;
     }
@@ -56,7 +56,7 @@ async function applyToTarget(target: IntegrationTarget, endpoint: MaxoutEndpoint
       await target.openConfigDiff(original, merged);
     } else {
       void vscode.window.showInformationMessage(
-        `${target.name} updated with Maxout endpoint.`
+        `${target.name} updated with FreeMaxxing endpoint.`
       );
     }
   } catch (err: any) {
@@ -73,3 +73,7 @@ export function getAvailableIntegrations(): IntegrationTarget[] {
 export function getInstalledIntegrationNames(): string[] {
   return getInstalledIntegrations().map(t => t.name);
 }
+
+// Backward compat alias
+export const pointExtensionAtMaxout = pointExtensionAtFreemaxxing;
+export type MaxoutEndpoint = FreemaxxingEndpoint;

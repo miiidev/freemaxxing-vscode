@@ -1,21 +1,22 @@
 /**
- * Pure parsing functions for Maxout CLI/output parsing.
+ * Pure parsing functions for FreeMaxxing CLI/output parsing.
  *
  * Kept free of `vscode` imports so they can be unit-tested with vitest
  * outside the VS Code API surface (spec §16).
  */
 
-/** A single parsed row from `maxout status --reliability` output. */
+/** A single parsed row from `freemaxxing status --reliability` output. */
 export interface StatusRow {
   model: string;
   state: string;
   requests: string;
   tokens: string;
   reliability: string;
+  score?: string;
 }
 
 /**
- * Parse the output from `maxout status --reliability`.
+ * Parse the output from `freemaxxing status --reliability`.
  *
  * Expected layout (from actual CLI output):
  * ```
@@ -60,6 +61,7 @@ export function parseStatusTable(output: string): StatusRow[] {
       requests,
       tokens: '—',
       reliability: avg,
+      score,
     };
 
     results.push(row);
@@ -74,15 +76,15 @@ export function parseStatusTable(output: string): StatusRow[] {
  * the known patterns matched.
  *
  * Handles:
- *  - `x-maxout-served-by: groq::gpt-oss-120b`
- *  - `x-maxout-served-by: groq::gpt-oss-120b`
+ *  - `x-freemaxxing-served-by: groq::gpt-oss-120b`
+ *  - `x-freemaxxing-served-by: groq::gpt-oss-120b` (header value alone)
  *  - `served by groq::gpt-oss-120b`
  *  - `routing request to groq::gpt-oss-120b`
  *  - bare header values like `groq::gpt-oss-120b`
  */
 export function parseServedBy(text: string): string | undefined {
-  // 1. Attribute-style: "x-maxout-served-by: <model>" or "served by <model>"
-  const attributed = text.match(/(?:x-maxout-served-by|served\s+by|serving\s+by|routed\s+to)[:\s]+(\S+)/i);
+  // 1. Attribute-style: "x-freemaxxing-served-by: <model>" or "served by <model>"
+  const attributed = text.match(/(?:x-freemaxxing-served-by|served\s+by|serving\s+by|routed\s+to)[:\s]+(\S+)/i);
   if (attributed) {
     return cleanModel(attributed[1]);
   }

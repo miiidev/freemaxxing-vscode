@@ -4,7 +4,7 @@ import { LineBuffer } from './lineBuffer';
 import { parseServedBy } from './parsers';
 
 /**
- * Manages the lifecycle of the `maxout serve` child process.
+ * Manages the lifecycle of the `freemaxxing serve` child process.
  *
  * Emits:
  *  - `output` (text: string): complete lines from stdout/stderr
@@ -29,9 +29,9 @@ export class ProcessManager {
   // -----------------------------------------------------------------------
 
   /**
-   * Spawn `maxout serve [--trace]` as a piped child process.
+   * Spawn `freemaxxing serve [--trace]` as a piped child process.
    *
-   * On Windows uses `{ shell: true }` so a bare `maxout` command resolves
+   * On Windows uses `{ shell: true }` so a bare `freemaxxing` command resolves
    * via PATH the same way it does in cmd.exe/PowerShell (spec §15).
    *
    * Spawn failures (ENOENT) surface asynchronously through the `spawnError`

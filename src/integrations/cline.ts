@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IntegrationTarget, MaxoutEndpoint, registerIntegration } from './types';
+import { IntegrationTarget, FreemaxxingEndpoint, registerIntegration } from './types';
 
 interface ClineApiConfig {
   provider: string;
@@ -51,10 +51,10 @@ const clineTarget: IntegrationTarget = {
     }
   },
 
-  mergeMaxoutConfig(config: unknown, endpoint: MaxoutEndpoint): unknown {
+  mergeFreemaxxingConfig(config: unknown, endpoint: FreemaxxingEndpoint): unknown {
     const cfg = (config as ClineSettings) || {};
 
-    const maxoutConfig: ClineApiConfig = {
+    const freemaxxingConfig: ClineApiConfig = {
       provider: 'openai',
       model: endpoint.model,
       apiBase: endpoint.apiBase,
@@ -62,23 +62,26 @@ const clineTarget: IntegrationTarget = {
     };
 
     // Set as primary apiConfiguration
-    cfg.apiConfiguration = maxoutConfig;
+    cfg.apiConfiguration = freemaxxingConfig;
 
     // Also add to apiConfigurations array if it exists
     if (Array.isArray(cfg.apiConfigurations)) {
       const idx = cfg.apiConfigurations.findIndex(
-        (c) => c.apiBase?.includes('8787') || c.provider === 'maxout'
+        (c) => c.apiBase?.includes('8787') || c.provider === 'freemaxxing'
       );
       if (idx >= 0) {
-        cfg.apiConfigurations[idx] = maxoutConfig;
+        cfg.apiConfigurations[idx] = freemaxxingConfig;
       } else {
-        cfg.apiConfigurations.push(maxoutConfig);
+        cfg.apiConfigurations.push(freemaxxingConfig);
       }
     } else {
-      cfg.apiConfigurations = [maxoutConfig];
+      cfg.apiConfigurations = [freemaxxingConfig];
     }
 
     return cfg;
+  },
+  mergeMaxoutConfig(config: unknown, endpoint: FreemaxxingEndpoint): unknown {
+    return this.mergeFreemaxxingConfig!(config, endpoint);
   },
 
   async openConfigDiff(original: unknown, merged: unknown): Promise<void> {
@@ -86,7 +89,7 @@ const clineTarget: IntegrationTarget = {
     const mergedStr = JSON.stringify(merged, null, 2);
 
     if (origStr === mergedStr) {
-      void vscode.window.showInformationMessage('Cline already has Maxout configured in settings.');
+      void vscode.window.showInformationMessage('Cline already has FreeMaxxing configured in settings.');
       return;
     }
 
@@ -97,7 +100,7 @@ const clineTarget: IntegrationTarget = {
     });
     await vscode.window.showTextDocument(doc, { preview: false });
     void vscode.window.showInformationMessage(
-      'Cline settings updated with Maxout. Review and save the workspace settings.json.'
+      'Cline settings updated with FreeMaxxing. Review and save the workspace settings.json.'
     );
   },
 };

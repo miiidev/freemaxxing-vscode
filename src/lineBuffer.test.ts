@@ -10,8 +10,8 @@ describe('LineBuffer', () => {
 
   it('buffers a partial line across chunks', () => {
     const buf = new LineBuffer();
-    expect(buf.push('x-maxout-served')).toEqual([]); // no newline yet
-    expect(buf.push('-by: groq::gpt-oss-120b\n')).toEqual(['x-maxout-served-by: groq::gpt-oss-120b']);
+    expect(buf.push('x-freemaxxing-served')).toEqual([]); // no newline yet
+    expect(buf.push('-by: groq::gpt-oss-120b\n')).toEqual(['x-freemaxxing-served-by: groq::gpt-oss-120b']);
   });
 
   it('splits multiple lines in one chunk', () => {

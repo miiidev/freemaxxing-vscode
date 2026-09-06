@@ -1,7 +1,7 @@
 /**
  * Accumulates streamed text chunks and hands back only complete lines.
  *
- * `maxout serve` writes JSON/routing lines; on a slow or chunked pipe a
+ * `freemaxxing serve` writes JSON/routing lines; on a slow or chunked pipe a
  * single logical line can be split across multiple `data` events. Naive
  * per-chunk `toString()` parsing would miss those matches (spec §10).
  */

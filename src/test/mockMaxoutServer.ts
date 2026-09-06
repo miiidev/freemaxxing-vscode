@@ -2,13 +2,13 @@ import * as http from 'http';
 import { AddressInfo } from 'net';
 
 /**
- * Tiny mocked Maxout server for integration tests (spec §16).
+ * Tiny mocked FreeMaxxing server for integration tests (spec §16).
  *
- * Mimics the parts of `maxout serve` the extension talks to:
+ * Mimics the parts of `freemaxxing serve` the extension talks to:
  *  - `GET /v1` — OpenAI-compatible endpoint; responds 200 with an
- *    `x-maxout-served-by` header (transparency header from the README).
+ *    `x-freemaxxing-served-by` header (transparency header from the README).
  */
-export class MockMaxoutServer {
+export class MockFreemaxxingServer {
   private server?: http.Server;
   private servedBy: string;
 
@@ -22,7 +22,7 @@ export class MockMaxoutServer {
         if (req.url === '/v1') {
           res.writeHead(200, {
             'Content-Type': 'application/json',
-            'x-maxout-served-by': this.servedBy,
+            'x-freemaxxing-served-by': this.servedBy,
           });
           res.end(JSON.stringify({ status: 'ok' }));
         } else {
@@ -53,3 +53,6 @@ export class MockMaxoutServer {
     });
   }
 }
+
+// Backward compat alias
+export const MockMaxoutServer = MockFreemaxxingServer;

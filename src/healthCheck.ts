@@ -5,18 +5,18 @@ import { exec, execFile } from 'child_process';
 import { promisify } from 'util';
 import { StatusRow, parseStatusTable, parseServedBy } from './parsers';
 
-const outputChannel = vscode.window.createOutputChannel('Maxout');
+const outputChannel = vscode.window.createOutputChannel('FreeMaxxing');
 
 const execP = promisify(exec);
 const execFileP = promisify(execFile);
 
 /**
- * Polls the Maxout server's `/v1` endpoint to determine server state.
- *
- * Treats *any* HTTP response as "up"; connection refused / DNS failure /
- * timeout as "down". Also captures the `x-maxout-served-by` header (when the
- * server responds with one) for the status bar.
- */
+   * Polls the FreeMaxxing server's `/v1` endpoint to determine server state.
+   *
+   * Treats *any* HTTP response as "up"; connection refused / DNS failure /
+   * timeout as "down". Also captures the `x-freemaxxing-served-by` header (when the
+   * server responds with one) for the status bar.
+   */
 export class HealthCheck {
   private _up = false;
   private _lastServedBy: string | undefined;
@@ -60,7 +60,7 @@ export class HealthCheck {
 
   /** Re-read config (host, port, poll interval). */
   updateConfig(): void {
-    const config = vscode.workspace.getConfiguration('maxout');
+    const config = vscode.workspace.getConfiguration('freemaxxing');
     // Health-check polling shares the dashboard refresh interval to keep
     // the setting surface small (spec §14 lean).
     this._pollIntervalMs = config.get<number>('dashboardRefreshMs', 5000);
@@ -72,7 +72,7 @@ export class HealthCheck {
   }
 
   /**
-   * Run `maxout status --reliability` and return parsed rows for the
+   * Run `freemaxxing status --reliability` and return parsed rows for the
    * dashboard. Shells out to the CLI (Phase 1 approach; spec Appendix B
    * proposes a `--json` flag to replace terminal scraping).
    *
@@ -82,8 +82,8 @@ export class HealthCheck {
   async fetchStatusReliability(cliPath: string): Promise<StatusRow[]> {
     const { stdout, stderr } = await this.runCli(cliPath, ['status', '--reliability']);
     const output = stdout.length > 0 ? stdout : stderr;
-    outputChannel.appendLine(`[Maxout] CLI output: ${JSON.stringify(output)}`);
-    outputChannel.appendLine(`[Maxout] CLI stdout length: ${stdout.length}, stderr length: ${stderr.length}`);
+    outputChannel.appendLine(`[FreeMaxxing] CLI output: ${JSON.stringify(output)}`);
+    outputChannel.appendLine(`[FreeMaxxing] CLI stdout length: ${stdout.length}, stderr length: ${stderr.length}`);
     return parseStatusTable(output);
   }
 
@@ -93,8 +93,8 @@ export class HealthCheck {
 
   /**
    * Cross-platform CLI invocation:
-   *  - POSIX: execFile directly; a bare `maxout` resolves via PATH.
-   *  - Windows: exec through the shell (`cmd.exe`) so a bare `maxout`
+   *  - POSIX: execFile directly; a bare `freemaxxing` resolves via PATH.
+   *  - Windows: exec through the shell (`cmd.exe`) so a bare `freemaxxing`
    *    resolves the same way it does in PowerShell/Command Prompt.
    */
   private async runCli(
@@ -122,12 +122,12 @@ export class HealthCheck {
   }
 
   private poll(): void {
-    const config = vscode.workspace.getConfiguration('maxout');
+    const config = vscode.workspace.getConfiguration('freemaxxing');
     const host = config.get<string>('host', '127.0.0.1');
     const port = config.get<number>('port', 8787);
 
     const req = http.get(`http://${host}:${port}/v1`, (res) => {
-      const header = res.headers['x-maxout-served-by'];
+      const header = res.headers['x-freemaxxing-served-by'];
       const rawServedBy = Array.isArray(header) ? header[0] : header;
       const servedBy = rawServedBy ? (parseServedBy(rawServedBy) ?? rawServedBy) : undefined;
 

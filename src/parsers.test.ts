@@ -9,7 +9,7 @@ import {
 } from './parsers';
 
 describe('parseStatusTable', () => {
-  // Test data matches actual `maxout status --reliability` output format:
+  // Test data matches actual `freemaxxing status --reliability` output format:
   // Fields are separated by 2+ spaces
   // provider::model    score=X    n=Y    avg=Zms
 
@@ -28,6 +28,7 @@ describe('parseStatusTable', () => {
       requests: '50',
       tokens: '—',
       reliability: '21518ms',
+      score: '1.00',
     });
     expect(rows[1].model).toBe('mistral::mistral-small-latest');
     expect(rows[1].state).toBe('ok');
@@ -44,7 +45,7 @@ describe('parseStatusTable', () => {
 
 describe('parseServedBy', () => {
   it('parses the header-style attribute', () => {
-    expect(parseServedBy('x-maxout-served-by: groq::gpt-oss-120b')).toBe('groq::gpt-oss-120b');
+    expect(parseServedBy('x-freemaxxing-served-by: groq::gpt-oss-120b')).toBe('groq::gpt-oss-120b');
   });
 
   it('parses "served by" prose', () => {

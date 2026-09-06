@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import { exec, execFile } from 'child_process';
 import { promisify } from 'util';
-import { formatCliOutput } from './parsers';
+import { formatCliOutput, parseServedBy } from './parsers';
 
 const execP = promisify(exec);
 const execFileP = promisify(execFile);
 
 /**
- * Phase 1 inline trace view: input box → execute `maxout trace <id>` →
+ * Phase 1 inline trace view: input box → execute `freemaxxing trace <id>` →
  * formatted result shown in a dedicated output channel (no terminal dump).
  *
  * `revive` uses the same input-box pattern and result channel.
@@ -17,18 +17,18 @@ export class TraceView {
   private traceHistory = new Map<string, number>(); // id → last run ts
 
   constructor() {
-    this.outputChannel = vscode.window.createOutputChannel('Maxout Trace');
+    this.outputChannel = vscode.window.createOutputChannel('FreeMaxxing Trace');
   }
 
   /**
-   * Show an input box asking for a request ID, then run `maxout trace <id>`
+   * Show an input box asking for a request ID, then run `freemaxxing trace <id>`
    * and render the formatted result inline.
    */
   show(cliPath: () => string): void {
     const input = vscode.window.createInputBox();
     input.title = 'Trace a Request';
     input.placeholder = 'Enter request ID (e.g. 8f3a9c…)';
-    input.prompt = 'Paste a maxout request ID to see routing details.';
+    input.prompt = 'Paste a FreeMaxxing request ID to see routing details.';
     input.ignoreFocusOut = true;
 
     input.onDidAccept(() => {
@@ -49,7 +49,7 @@ export class TraceView {
 
   /**
    * Show an input box asking for a model or provider to revive, then run
-   * `maxout revive <id>` and show the result inline.
+   * `freemaxxing revive <id>` and show the result inline.
    */
   showRevive(cliPath: () => string): void {
     const input = vscode.window.createInputBox();
@@ -83,16 +83,29 @@ export class TraceView {
 
   private async runTrace(cliPath: string, requestId: string): Promise<void> {
     this.outputChannel.show(true);
-    this.outputChannel.appendLine(`——— maxout trace ${requestId} ———`);
+    this.outputChannel.appendLine(`——— freemaxxing trace ${requestId} ———`);
     this.outputChannel.appendLine('');
 
     try {
       const result = await this.runCli(cliPath, ['trace', requestId]);
-      this.outputChannel.appendLine(formatCliOutput(result.stdout || result.stderr));
+      const raw = formatCliOutput(result.stdout || result.stderr);
+      this.outputChannel.appendLine(raw);
+
+      // Parse and display routing summary
+      const servedBy = parseServedBy(raw);
+      if (servedBy) {
+        this.outputChannel.appendLine(`--- Served by: ${servedBy} ---`);
+      }
+
+      // Count routing attempts (approximate by counting model entries)
+      const attemptCount = (raw.match(/model:/gi) || []).length;
+      if (attemptCount > 1) {
+        this.outputChannel.appendLine(`--- Routing attempts: ${attemptCount} ---`);
+      }
     } catch (err: any) {
       if (err?.code === 'ENOENT') {
         this.outputChannel.appendLine(
-          `Maxout CLI not found (${cliPath}). Install it or set \`maxout.cliPath\` in settings.`
+          `FreeMaxxing CLI not found (${cliPath}). Install it or set \`freemaxxing.cliPath\` in settings.`
         );
         this.promptCliNotFound(cliPath);
       } else {
@@ -106,16 +119,23 @@ export class TraceView {
 
   private async runRevive(cliPath: string, modelOrProvider: string): Promise<void> {
     this.outputChannel.show(true);
-    this.outputChannel.appendLine(`——— maxout revive ${modelOrProvider} ———`);
+    this.outputChannel.appendLine(`——— freemaxxing revive ${modelOrProvider} ———`);
     this.outputChannel.appendLine('');
 
     try {
       const result = await this.runCli(cliPath, ['revive', modelOrProvider]);
-      this.outputChannel.appendLine(formatCliOutput(result.stdout || result.stderr));
+      const raw = formatCliOutput(result.stdout || result.stderr);
+      this.outputChannel.appendLine(raw);
+
+      // Parse and display routing summary
+      const servedBy = parseServedBy(raw);
+      if (servedBy) {
+        this.outputChannel.appendLine(`--- Served by: ${servedBy} ---`);
+      }
     } catch (err: any) {
       if (err?.code === 'ENOENT') {
         this.outputChannel.appendLine(
-          `Maxout CLI not found (${cliPath}). Install it or set \`maxout.cliPath\` in settings.`
+          `FreeMaxxing CLI not found (${cliPath}). Install it or set \`freemaxxing.cliPath\` in settings.`
         );
         this.promptCliNotFound(cliPath);
       } else {
@@ -123,21 +143,23 @@ export class TraceView {
       }
     }
     this.outputChannel.appendLine('');
+
+    this.traceHistory.set(modelOrProvider, Date.now());
   }
 
   private promptCliNotFound(cliPath: string): void {
     vscode.window
       .showErrorMessage(
-        'Maxout CLI not found. Install it or set `maxout.cliPath` in settings.',
+        'FreeMaxxing CLI not found. Install it or set `freemaxxing.cliPath` in settings.',
         'Open Settings',
         'Install Instructions'
       )
       .then((selection) => {
         if (selection === 'Open Settings') {
-          void vscode.commands.executeCommand('workbench.action.openSettings', 'maxout.cliPath');
+          void vscode.commands.executeCommand('workbench.action.openSettings', 'freemaxxing.cliPath');
         } else if (selection === 'Install Instructions') {
           void vscode.env.openExternal(
-            vscode.Uri.parse('https://github.com/miiidev/maxout#installation')
+            vscode.Uri.parse('https://github.com/miiidev/freemaxxing#installation')
           );
         }
       });

@@ -6,15 +6,19 @@ export interface IntegrationTarget {
   getConfigPath(): string | undefined;
   readConfig(): Promise<unknown>;
   writeConfig(config: unknown): Promise<void>;
-  mergeMaxoutConfig(config: unknown, endpoint: MaxoutEndpoint): unknown;
+  mergeMaxoutConfig(config: unknown, endpoint: FreemaxxingEndpoint): unknown;
+  mergeFreemaxxingConfig?: (config: unknown, endpoint: FreemaxxingEndpoint) => unknown;
   openConfigDiff?(original: unknown, merged: unknown): Promise<void>;
 }
 
-export interface MaxoutEndpoint {
+export interface FreemaxxingEndpoint {
   apiBase: string;
   apiKey: string;
   model: string;
 }
+
+// Backward compat alias
+export type MaxoutEndpoint = FreemaxxingEndpoint;
 
 export interface IntegrationResult {
   target: IntegrationTarget;
